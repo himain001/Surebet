@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Match Predictions | Pay & Get by Email</title>
+  <style>
+    /* --------- DARK + YELLOW THEME --------- */
+    :root {
+      --bg: #0a0a0a;
+      --card: #1a1a1a;
+      --accent: #facc15; /* yellow */
+      --text: #f3f3f3;
+      --muted: #9ca3af;
+      --btn: #facc15;
+      --btn-hover: #fde047;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+    }
+    .wrap {
+      max-width: 1000px;
+      width: 100%;
+      text-align: center;
+    }
+    header h1 {
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* --------- GRID --------- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(250,204,21,0.2);
+    }
+    .card h3 {
+      color: var(--accent);
+      font-size: 18px;
+      margin: 0 0 8px 0;
+    }
+    .card .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .price {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 8px;
+      color: var(--text);
+    }
+    .btn {
+      background: var(--btn);
+      border: none;
+      color: #000;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.25s ease, transform 0.2s;
+    }
+    .btn:hover {
+      background: var(--btn-hover);
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* --------- MODAL --------- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 14px;
+      max-width: 400px;
+      width: 92%;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+      animation: fadeIn 0.3s ease;
+    }
+    .modal h2 {
+      margin: 0 0 6px 0;
+      color: var(--accent);
+    }
+    .field {
+      margin-top: 12px;
+      text-align: left;
+    }
+    input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #111;
+      color: var(--text);
+    }
+    input[type="email"]::placeholder {
+      color: var(--muted);
+    }
+    .pay-btn {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--btn);
+      color: #000;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .pay-btn:hover {
+      background: var(--btn-hover);
+    }
+    .close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .modal p.small {
+      margin-top: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>SUREBET</h1>
+      <h2>⚽ Expert Match Predictions</h2>
+      <div class="subtitle">Buy your slot — Receive predictions instantly by email.<br>Win more than 3 times your stake.</div>
+    </header>
+
+    <div class="grid" id="slotsGrid"></div>
+
+    <footer>Instant email delivery after payment.</footer>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" id="modal">
+      <button class="close" id="modalClose">&times;</button>
+      <h2 id="modalTitle">Slot</h2>
+      <div class="small" id="modalDesc">5 expert predictions</div>
+
+      <div class="field">
+        <label for="buyerEmail" class="small">Your Email</label>
+        <input id="buyerEmail" type="email" placeholder="you@example.com" />
+      </div>
+
+      <div class="field">
+        <div class="price" id="modalPrice">Ksh 50</div>
+        <div class="small">Processed securely via Paystack.</div>
+      </div>
+
+      <button id="payNow" class="pay-btn">Pay Now</button>
+      <p id="modalMsg" class="small"></p>
+    </div>
+  </div>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script>
+    const PAYSTACK_PUBLIC_KEY = 'pk_live_b0a29d1d61268d8efd7d0b7e0159b6b036a0d124';
+    const SLOTS = [
+      { id: 'bronze', name: 'Bronze Slot', price: 50, description: '5 beginner-friendly predictions', predictions: ['A-B: A to win','C-D: Over 2.5','E-F: Both to score','G-H: Draw','I-J: J to win'] },
+      { id: 'silver', name: 'Silver Slot', price: 100, description: '5 solid predictions', predictions: ['K-L: K to win','M-N: Under 3.5','O-P: Both to score','Q-R: R to win','S-T: Both to score'] },
+      { id: 'gold', name: 'Gold Slot', price: 150, description: '5 pro predictions', predictions: ['U-V: U to win','W-X: Over 2.5','Y-Z: Z to win','AA-AB: Both to score','AC-AD: Draw'] },
+      { id: 'vip', name: 'VIP Slot', price: 250, description: '5 premium predictions', predictions: ['AE-AF: AF to win','AG-AH: Over 2.5','AI-AJ: Both to score','AK-AL: AK to win','AM-AN: Draw'] }
+    ];
+
+    const grid = document.getElementById('slotsGrid');
+    SLOTS.forEach(slot => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `
+        <div>
+          <h3>${slot.name}</h3>
+          <div class="small">${slot.description}</div>
+        </div>
+        <div>
+          <div class="price">Ksh ${slot.price}</div>
+          <button class="btn" data-slot="${slot.id}">Buy Slot</button>
+        </div>`;
+      grid.appendChild(el);
+    });
+
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalPrice = document.getElementById('modalPrice');
+    const buyerEmail = document.getElementById('buyerEmail');
+    const payNowBtn = document.getElementById('payNow');
+    const modalMsg = document.getElementById('modalMsg');
+    const modalClose = document.getElementById('modalClose');
+    let selectedSlot = null;
+
+    grid.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-slot]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-slot');
+      selectedSlot = SLOTS.find(s => s.id === id);
+      openModal(selectedSlot);
+    });
+
+    function openModal(slot) {
+      modalTitle.textContent = slot.name;
+      modalDesc.textContent = slot.description;
+      modalPrice.textContent = 'Ksh ' + slot.price;
+      modalMsg.textContent = '';
+      buyerEmail.value = '';
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+    }
+    function closeModal() {
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.setAttribute('aria-hidden','true');
+      selectedSlot = null;
+    }
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
+
+    payNowBtn.addEventListener('click', () => {
+      const email = buyerEmail.value.trim();
+      if (!email || !/\S+@\S+\.\S+/.test(email)) {
+        modalMsg.style.color = 'crimson';
+        modalMsg.textContent = 'Enter a valid email.';
+        return;
+      }
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: selectedSlot.price * 100,
+        currency: 'KES',
+        metadata: { custom_fields: [{ display_name: 'Slot', value: selectedSlot.name }] },
+        callback: function(response){
+          modalMsg.style.color = 'yellow';
+          modalMsg.textContent = 'Payment success! Sending predictions...';
+          // Simulate sending predictions (replace with your backend)
+          setTimeout(() => {
+            modalMsg.style.color = 'lime';
+            modalMsg.textContent = 'Predictions sent to ' + email;
+          }, 2000);
+        },
+        onClose: () => { modalMsg.textContent = 'Payment cancelled.'; }
+      });
+      handler.openIframe();
+    });
+  </script>
+</body>
+</html>
