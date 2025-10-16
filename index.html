@@ -464,6 +464,395 @@
 
   </script>
 </body>
+</html>      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap:16px;
+    }
+    .slot {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(230,184,0,0.06);
+      padding:16px;
+      border-radius:12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .slot:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(230,184,0,0.06); }
+    .slot h3 { margin:0; color:var(--gold); font-size:16px; }
+    .slot .desc { color:var(--muted); margin-top:6px; font-size:13px; }
+    .slot .price { font-weight:800; font-size:18px; margin-top:10px; color:var(--text); }
+    .buybtn {
+      margin-top:12px;
+      background:var(--gold);
+      color:#000;
+      padding:10px 12px;
+      border-radius:9px;
+      border:0;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    /* Right: reveal & download */
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+      border-radius:12px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,0.02);
+      min-height:200px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .panel h4 { margin:0 0 8px 0; color:var(--gold); }
+    .panel .muted { color:var(--muted); font-size:13px; margin-bottom:12px; }
+
+    .prediction-list { margin:0; padding:0; list-style:none; color:var(--text); }
+    .prediction-list li {
+      padding:10px;
+      border-radius:8px;
+      margin-bottom:8px;
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .prediction-left { max-width:74%; }
+    .match-title { font-weight:700; color:var(--text); margin-bottom:6px; }
+    .match-meta { color:var(--muted); font-size:13px; }
+
+    .download-row { margin-top:14px; display:flex; gap:10px; align-items:center; }
+    .download-btn {
+      background:transparent;
+      color:var(--gold);
+      border:1px solid rgba(230,184,0,0.15);
+      padding:10px 12px;
+      border-radius:9px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .hidden { display:none !important; }
+
+    /* modal */
+    .modal-backdrop {
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.65); z-index:60;
+    }
+    .modal {
+      width:92%;
+      max-width:420px;
+      background: linear-gradient(180deg,#0f0d11,#141218);
+      padding:18px;
+      border-radius:12px;
+      border: 1px solid rgba(230,184,0,0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+      position:relative;
+    }
+    .close { position:absolute; right:12px; top:10px; background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; }
+    .modal h3 { margin:0; color:var(--gold); }
+    .modal .small { color:var(--muted); font-size:13px; margin-top:6px; }
+    input[type="email"] { width:100%; padding:10px; margin-top:10px; border-radius:8px; border:1px solid #222; background:#0b0b0d; color:var(--text); }
+    .pay-primary {
+      margin-top:12px; width:100%; padding:10px; border-radius:9px; border:0; cursor:pointer; background:var(--gold); color:#000; font-weight:800;
+    }
+    .modal .price { margin-top:8px; font-weight:700; color:var(--text); }
+
+    /* small helpers */
+    .center { text-align:center; }
+    .muted-sm { color:var(--muted); font-size:13px; }
+    @media (max-width:980px){
+      .main { grid-template-columns: 1fr; }
+      .panel { order: 2; margin-top:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <header>
+      <div class="logo" id="logoWrap">
+        <!-- If logo.png exists (user will upload), it will show here; otherwise show text -->
+        <img id="logoImg" src="logo.png" alt="SUREBETS logo" onerror="this.style.display='none'; document.getElementById('logoText').style.display='block'"/>
+        <div id="logoText" style="display:none;color:var(--gold);font-weight:800;">SURE<br>BETS</div>
+      </div>
+      <div>
+        <h1>SUREBETS</h1>
+        <div class="tagline muted-sm">Premium match predictions — pay, view & download instantly</div>
+      </div>
+    </header>
+
+    <div class="main">
+      <div>
+        <div class="slots" id="slots">
+
+          <!-- Slot cards injected here -->
+        </div>
+
+        <div style="margin-top:16px;color:var(--muted);font-size:13px;">
+          Tip: Click a slot, enter your email, pay — predictions will appear on the right and you can download them as a PDF.
+        </div>
+      </div>
+
+      <aside class="panel" id="revealPanel">
+        <h4 id="revealTitle">Predictions</h4>
+        <div class="muted" id="revealSubtitle">No purchase yet — buy a slot to reveal predictions</div>
+
+        <ol class="prediction-list" id="predList"></ol>
+
+        <div class="download-row hidden" id="downloadRow">
+          <button class="download-btn" id="downloadPdf">Download as PDF</button>
+          <div class="muted-sm" id="emailNote">Delivered to: <span id="buyerEmailNote">—</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- payment modal -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="close" id="modalClose">&times;</button>
+      <h3 id="modalTitle">Slot</h3>
+      <div class="small" id="modalDesc">5 expert predictions</div>
+
+      <label class="small" style="display:block;margin-top:12px">Your email</label>
+      <input id="buyerEmailInput" type="email" placeholder="you@example.com" />
+
+      <div class="price" id="modalPrice">Ksh 50</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="pay-primary" id="startPay">Pay with Paystack</button>
+        <button class="download-btn" id="modalCancel" style="background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.04)">Cancel</button>
+      </div>
+      <div class="small" id="modalMsg" style="margin-top:10px;color:var(--muted)"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const PAYSTACK_PUBLIC_KEY = 'pk_live_66bbdd434d5691c34ac91be28512e97e6199e9af';
+
+    // User-provided predictions grouped into 4 slots (5 each)
+    const SLOTS = [
+      {
+        id: 'bronze',
+        name: 'Bronze',
+        price: 50,
+        items: [
+          { match: 'Burnley vs Leeds', date: '18/10/2025 17:00', tip: '2' },
+          { match: 'Brighton vs Newcastle', date: '18/10/2025 17:00', tip: 'X' },
+          { match: 'Sunderland vs Wolves', date: '18/10/2025 17:00', tip: '1' },
+          { match: 'Nice vs Lyon', date: '18/10/2025 18:00', tip: '2' },
+          { match: 'AS Roma vs Inter Milano', date: '18/10/2025 21:45', tip: '2' }
+        ]
+      },
+      {
+        id: 'silver',
+        name: 'Silver',
+        price: 100,
+        items: [
+          { match: 'Como 1907 vs Juventus', date: '19/10/2025 13:30', tip: '2' },
+          { match: 'Elche vs Athletic Bilbao', date: '19/10/2025 15:00', tip: '2' },
+          { match: 'Tottenham vs Aston Villa', date: '19/10/2025 16:00', tip: '1' },
+          { match: 'Cagliari vs Bologna', date: '19/10/2025 16:00', tip: '2' },
+          { match: 'Freiburg vs Eintracht Frankfurt', date: '19/10/2025 16:30', tip: '1' }
+        ]
+      },
+      {
+        id: 'gold',
+        name: 'Gold',
+        price: 150,
+        items: [
+          { match: 'Celta Vigo vs Real Sociedad', date: '19/10/2025 18:15', tip: '2' },
+          { match: 'Lorient vs Brest', date: '19/10/2025 18:30', tip: '1' },
+          { match: 'St. Pauli vs Hoffenheim', date: '19/10/2025 18:30', tip: '2' },
+          { match: 'Levante vs Albacete', date: '19/10/2025 19:30', tip: '1' },
+          { match: 'Ajax vs Feyenoord', date: '19/10/2025 21:00', tip: '—' }
+        ]
+      },
+      {
+        id: 'vip',
+        name: 'VIP',
+        price: 250,
+        items: [
+          { match: 'Chelsea vs Arsenal', date: '19/10/2025 21:30', tip: '—' },
+          { match: 'PSG vs Monaco', date: '19/10/2025 22:00', tip: '—' },
+          { match: 'Real Madrid vs Valencia', date: '19/10/2025 22:30', tip: '—' },
+          { match: 'AC Milan vs Napoli', date: '20/10/2025 00:00', tip: '—' },
+          { match: 'Bayern Munich vs Dortmund', date: '20/10/2025 00:30', tip: '—' }
+        ]
+      }
+    ];
+
+    // ===== UI references =====
+    const slotsWrap = document.getElementById('slots');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalPrice = document.getElementById('modalPrice');
+    const buyerEmailInput = document.getElementById('buyerEmailInput');
+    const startPayBtn = document.getElementById('startPay');
+    const modalMsg = document.getElementById('modalMsg');
+    const modalCloseBtn = document.getElementById('modalClose');
+    const modalCancelBtn = document.getElementById('modalCancel');
+
+    const revealTitle = document.getElementById('revealTitle');
+    const revealSubtitle = document.getElementById('revealSubtitle');
+    const predList = document.getElementById('predList');
+    const downloadRow = document.getElementById('downloadRow');
+    const downloadPdfBtn = document.getElementById('downloadPdf');
+    const buyerEmailNote = document.getElementById('buyerEmailNote');
+
+    // Current slot selected
+    let currentSlot = null;
+    let currentBuyerEmail = null;
+
+    // Build slots UI
+    function renderSlots(){
+      slotsWrap.innerHTML = '';
+      SLOTS.forEach(s => {
+        const el = document.createElement('div');
+        el.className = 'slot';
+        el.innerHTML = `
+          <h3>${s.name} Slot</h3>
+          <div class="desc">Get ${s.items.length} match predictions</div>
+          <div class="price">Ksh ${s.price}</div>
+          <button class="buybtn" data-slot="${s.id}">Buy Ksh ${s.price}</button>
+        `;
+        slotsWrap.appendChild(el);
+      });
+    }
+
+    renderSlots();
+
+    // Slot click -> open modal
+    slotsWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-slot]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-slot');
+      currentSlot = SLOTS.find(s => s.id === id);
+      if (!currentSlot) return;
+      modalTitle.textContent = `${currentSlot.name} Slot`;
+      modalDesc.textContent = `${currentSlot.items.length} match predictions`;
+      modalPrice.textContent = `Ksh ${currentSlot.price}`;
+      buyerEmailInput.value = '';
+      modalMsg.textContent = '';
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+    });
+
+    // Close modal
+    function closeModal(){
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.setAttribute('aria-hidden','true');
+    }
+    modalCloseBtn.addEventListener('click', closeModal);
+    modalCancelBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (ev) => { if (ev.target === modalBackdrop) closeModal(); });
+
+    // Payment handler
+    startPayBtn.addEventListener('click', () => {
+      const email = buyerEmailInput.value.trim();
+      if (!email || !/\S+@\S+\.\S+/.test(email)){
+        modalMsg.style.color = 'crimson';
+        modalMsg.textContent = 'Enter a valid email';
+        return;
+      }
+      modalMsg.textContent = 'Opening payment...';
+      // amount in smallest unit
+      const amount = currentSlot.price * 100;
+
+      // Initialize Paystack
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: amount,
+        currency: 'KES',
+        metadata: { slotId: currentSlot.id },
+        callback: function(response){
+          // Payment successful (client-side) -> reveal predictions
+          // NOTE: For full production reliability, use server-side webhook verification.
+          currentBuyerEmail = email;
+          showPredictions(currentSlot, email, response.reference);
+          closeModal();
+        },
+        onClose: function(){
+          modalMsg.style.color = 'var(--muted)';
+          modalMsg.textContent = 'Payment popup closed.';
+        }
+      });
+      handler.openIframe();
+    });
+
+    // Show predictions in the right panel and enable download
+    function showPredictions(slot, email, reference){
+      revealTitle.textContent = `${slot.name} — Predictions (Ref: ${reference || '—'})`;
+      revealSubtitle.textContent = `Purchased by: ${email}`;
+      predList.innerHTML = '';
+      slot.items.forEach((it, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<div class="prediction-left">
+                          <div class="match-title">${i+1}. ${it.match}</div>
+                          <div class="match-meta">Date: ${it.date} · Tip: ${it.tip}</div>
+                        </div>`;
+        predList.appendChild(li);
+      });
+      buyerEmailNote.textContent = email;
+      downloadRow.classList.remove('hidden');
+      // Scroll to panel on small screens
+      setTimeout(()=> {
+        document.getElementById('revealPanel').scrollIntoView({behavior:'smooth', block:'start'});
+      }, 150);
+    }
+
+    // Download PDF using jsPDF
+    downloadPdfBtn.addEventListener('click', async () => {
+      if (!currentSlot || !currentBuyerEmail) return alert('No predictions to download.');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      // Header
+      doc.setFillColor(15,13,17);
+      doc.rect(0,0,595,70,'F');
+      doc.setFontSize(20);
+      doc.setTextColor(230,184,0);
+      doc.text('SUREBETS', 40, 40);
+      doc.setFontSize(10);
+      doc.setTextColor(160,160,160);
+      doc.text(`Slot: ${currentSlot.name}   Purchased by: ${currentBuyerEmail}`, 140, 42);
+
+      doc.setDrawColor(230,184,0);
+      doc.setLineWidth(0.5);
+      doc.line(40,82,555,82);
+
+      doc.setFontSize(12);
+      doc.setTextColor(255,255,255);
+      let y = 110;
+      currentSlot.items.forEach((it, i) => {
+        doc.setFontSize(11);
+        doc.setTextColor(255,255,255);
+        doc.text(`${i+1}. ${it.match}`, 40, y);
+        doc.setFontSize(10);
+        doc.setTextColor(200,200,200);
+        doc.text(`Date: ${it.date}    Tip: ${it.tip}`, 40, y + 16);
+        y += 40;
+        if (y > 740) { doc.addPage(); y = 60; }
+      });
+
+      doc.setFontSize(9);
+      doc.setTextColor(150,150,150);
+      const now = new Date().toLocaleString();
+      doc.text(`Generated: ${now}`, 40, 780);
+
+      const filename = `SUREBETS_${currentSlot.name}_${(new Date()).toISOString().slice(0,10)}.pdf`;
+      doc.save(filename);
+    });
+
+    // If user uploaded logo.png, it will show automatically in the <img> tag.
+    // If they didn't, the fallback text SUREBETS is shown via onerror earlier.
+
+    // Optional: auto-clear reveal if user refreshes or starts another purchase
+    // reset UI at load
+    (function init(){
+      revealTitle.textContent = 'Predictions';
+      revealSubtitle.textContent = 'No purchase yet — buy a slot to reveal predictions';
+      downloadRow.classList.add('hidden');
+    })();
+
+  </script>
+</body>
 </html>      { id: 'bronze', name: 'Bronze Slot', price: 50, description: '5 beginner-friendly tips' },
       { id: 'silver', name: 'Silver Slot', price: 100, description: '5 solid predictions' },
       { id: 'gold', name: 'Gold Slot', price: 150, description: '5 pro predictions' },
