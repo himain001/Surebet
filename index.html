@@ -1,81 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Match Predictions | Pay & Get by Email</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Match Predictions — Buy & Receive by Email</title>
   <style>
-    /* --------- DARK + YELLOW THEME --------- */
-    :root {
-      --bg: #0a0a0a;
-      --card: #1a1a1a;
-      --accent: #facc15; /* yellow */
-      --text: #f3f3f3;
-      --muted: #9ca3af;
-      --btn: #facc15;
-      --btn-hover: #fde047;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: "Poppins", sans-serif;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-    }
-    .wrap {
-      max-width: 1000px;
-      width: 100%;
-      text-align: center;
-    }
-    header h1 {
-      margin-bottom: 10px;
-      color: var(--accent);
-      font-size: 24px;
-      letter-spacing: 1px;
-    }
-    .subtitle {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
+    :root { --bg:#070707; --card:#111216; --accent:#f6c84c; --muted:#9aa1a6; --text:#f3f4f6; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 10% 10%,#0f1113 0%,#060607 60%);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .wrap{width:100%;max-width:980px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    h1{margin:0;color:var(--accent);font-size:22px}
+    .subtitle{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(246,200,76,0.06);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    .card h3{margin:0;color:var(--accent)}
+    .small{color:var(--muted);font-size:13px}
+    .price{font-weight:700;margin-top:10px;font-size:18px}
+    .btn{background:var(--accent);color:#000;border:none;padding:10px 12px;border-radius:8px;cursor:pointer;margin-top:10px;font-weight:700}
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:50}
+    .modal{background:var(--card);padding:20px;border-radius:12px;width:92%;max-width:420px;position:relative}
+    .close{position:absolute;right:14px;top:10px;background:transparent;border:0;color:var(--muted);font-size:20px;cursor:pointer}
+    input[type="email"]{width:100%;padding:10px;border-radius:8px;border:1px solid #222;background:#0f0f0f;color:var(--text)}
+    .pay-btn{width:100%;padding:10px;border-radius:8px;border:0;background:var(--accent);font-weight:700;color:#000;cursor:pointer;margin-top:12px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Match Predictions</h1>
+        <div class="subtitle">Buy a slot and receive 5 real upcoming match predictions by email</div>
+      </div>
+    </header>
 
-    /* --------- GRID --------- */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 18px;
-    }
-    .card {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 30px rgba(250,204,21,0.2);
-    }
-    .card h3 {
-      color: var(--accent);
-      font-size: 18px;
-      margin: 0 0 8px 0;
-    }
-    .card .small {
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .price {
+    <div class="grid" id="slotsGrid">
+      <!-- Cards injected by script -->
+    </div>
+
+    <footer>After successful payment you'll receive predictions by email automatically.</footer>
+  </div>
+
+  <!-- modal -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" id="modal">
+      <button class="close" id="modalClose">&times;</button>
+      <h2 id="modalTitle">Slot</h2>
+      <div class="small" id="modalDesc">5 expert predictions</div>
+
+      <div style="margin-top:12px">
+        <label class="small">Your email</label>
+        <input id="buyerEmail" type="email" placeholder="you@example.com" />
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="price" id="modalPrice">Ksh 50</div>
+        <div class="small">Processed via Paystack</div>
+      </div>
+
+      <button id="payNow" class="pay-btn">Pay with Paystack</button>
+      <p id="modalMsg" class="small" style="margin-top:10px;color:var(--muted)"></p>
+    </div>
+  </div>
+
+  <!-- Paystack inline script -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <script>
+    // YOUR public key (you provided earlier)
+    const PAYSTACK_PUBLIC_KEY = 'pk_live_66bbdd434d5691c34ac91be28512e97e6199e9af';
+
+    // slots
+    const SLOTS = [
+      { id: 'bronze', name: 'Bronze Slot', price: 50, description: '5 beginner-friendly tips' },
+      { id: 'silver', name: 'Silver Slot', price: 100, description: '5 solid predictions' },
+      { id: 'gold', name: 'Gold Slot', price: 150, description: '5 pro predictions' },
+      { id: 'vip', name: 'VIP Slot', price: 250, description: '5 premium predictions' }
+    ];
+
+    const grid = document.getElementById('slotsGrid');
+    SLOTS.forEach(slot=>{
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<h3>${slot.name}</h3><div class="small">${slot.description}</div><div class="price">Ksh ${slot.price}</div><button class="btn" data-slot="${slot.id}">Buy</button>`;
+      grid.appendChild(el);
+    });
+
+    // modal logic
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalPrice = document.getElementById('modalPrice');
+    const buyerEmail = document.getElementById('buyerEmail');
+    const payNowBtn = document.getElementById('payNow');
+    const modalMsg = document.getElementById('modalMsg');
+    const modalClose = document.getElementById('modalClose');
+    let selectedSlot = null;
+
+    grid.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-slot]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-slot');
+      selectedSlot = SLOTS.find(s => s.id === id);
+      modalTitle.textContent = selectedSlot.name;
+      modalDesc.textContent = selectedSlot.description;
+      modalPrice.textContent = 'Ksh ' + selectedSlot.price;
+      buyerEmail.value = '';
+      modalMsg.textContent = '';
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+    });
+
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal(); });
+    function closeModal(){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); selectedSlot = null; }
+
+    payNowBtn.addEventListener('click', () => {
+      const email = buyerEmail.value.trim();
+      if (!email || !/\S+@\S+\.\S+/.test(email)) { modalMsg.style.color='crimson'; modalMsg.textContent='Enter a valid email.'; return; }
+      modalMsg.style.color='var(--muted)'; modalMsg.textContent='Starting payment...';
+
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: selectedSlot.price * 100, // KES smallest unit
+        currency: 'KES',
+        metadata: { slotId: selectedSlot.id },
+        callback: function(response){
+          // We rely on server-side webhook to send predictions; show friendly message
+          modalMsg.style.color='limegreen';
+          modalMsg.textContent = 'Payment successful. You will receive predictions by email shortly.';
+          // optionally close modal after short delay
+          setTimeout(closeModal, 3000);
+        },
+        onClose: function(){ modalMsg.textContent = 'Payment window closed.'; }
+      });
+      handler.openIframe();
+    });
+  </script>
+</body>
+</html>    .price {
       font-size: 20px;
       font-weight: 600;
       margin-top: 8px;
